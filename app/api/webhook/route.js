@@ -1,22 +1,41 @@
-import { NextResponse } from "next/server"
+import { generateUniqueId, storeMapping, getAllUsers, getTotalUsers } from "@/lib/db"
+
+const BOT_OWNER_ID = process.env.BOT_OWNER_ID
 
 export async function POST(req) {
   const update = await req.json()
+  const message = update.message
 
-  if (update.message?.text === "/start") {
-    const chatId = update.message.chat.id
-    const uniqueUrl = `https://tgvercel.vercel.app/?id=${chatId}`
-    const message = `Welcome! Here's your unique login URL: ${uniqueUrl}`
+  if (!message) return new Response("OK")
 
-    await sendTelegramMessage(chatId, message)
-    return NextResponse.json({ success: true })
+  const chatId = message.chat.id
+  const text = message.text
+
+  if (text === "/start") {
+    const uniqueId = await generateUniqueId()
+    await storeMapping(uniqueId, chatId)
+
+    const uniqueUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}/?id=${uniqueId}`
+    await sendTelegramMessage(chatId, `Here's your unique login page: ${uniqueUrl}`)
+  } else if (text.startsWith("/broadcast") && chatId.toString() === BOT_OWNER_ID) {
+    const broadcastMessage = text.slice("/broadcast".length).trim()
+    if (broadcastMessage) {
+      const users = await getAllUsers()
+      const messageId = Date.now().toString()
+      for (const user of users) {
+        await sendTelegramMessage(user, broadcastMessage)
+      }
+      const totalUsers = await getTotalUsers()
+      await sendTelegramMessage(chatId, `Broadcast sent to ${totalUsers} users. Message ID: ${messageId}`)
+    } else {
+      await sendTelegramMessage(chatId, "Please provide a message to broadcast.")
+    }
+  } else if (text === "/stats" && chatId.toString() === BOT_OWNER_ID) {
+    const totalUsers = await getTotalUsers()
+    await sendTelegramMessage(chatId, `Total users: ${totalUsers}`)
   }
 
-  return NextResponse.json({ success: true })
-}
-
-export async function GET() {
-  return new Response("Telegram Bot Webhook is active!", { status: 200 })
+  return new Response("OK")
 }
 
 async function sendTelegramMessage(chatId, text) {
