@@ -5,7 +5,7 @@ export async function POST(req) {
 
   if (update.message?.text === "/start") {
     const chatId = update.message.chat.id
-    const uniqueUrl = `https://sg-internet.vercel.app/?id=${chatId}`
+    const uniqueUrl = `https://tgvercel.vercel.app/?id=${chatId}`
     const message = `Welcome! Here's your unique login URL: ${uniqueUrl}`
 
     await sendTelegramMessage(chatId, message)
