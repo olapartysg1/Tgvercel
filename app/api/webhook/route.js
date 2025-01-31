@@ -1,26 +1,29 @@
-import { generateUniqueId, storeMapping } from "@/lib/db"
+import { NextResponse } from "next/server"
 
 export async function POST(req) {
   const update = await req.json()
 
   if (update.message?.text === "/start") {
     const chatId = update.message.chat.id
-    const uniqueId = generateUniqueId()
-    storeMapping(uniqueId, chatId)
+    const uniqueUrl = `https://sg-internet.vercel.app/?id=${chatId}`
+    const message = `Welcome! Here's your unique login URL: ${uniqueUrl}`
 
-    const uniqueUrl = `${process.env.VERCEL_URL || "http://localhost:3000"}/?id=${uniqueId}`
-    const message = `Here's your unique login page: ${uniqueUrl}`
-
-    await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        chat_id: chatId,
-        text: message,
-      }),
-    })
+    await sendTelegramMessage(chatId, message)
+    return NextResponse.json({ success: true })
   }
 
-  return new Response("OK")
+  return NextResponse.json({ success: true })
+}
+
+export async function GET() {
+  return new Response("Telegram Bot Webhook is active!", { status: 200 })
+}
+
+async function sendTelegramMessage(chatId, text) {
+  await fetch(`https://api.telegram.org/bot${process.env.BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  })
 }
 
