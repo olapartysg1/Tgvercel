@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation"
 import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Github, GitlabIcon, Mail } from "lucide-react"
 import { handleLogin } from "@/app/actions"
 
 export default function LoginForm() {
@@ -29,7 +30,25 @@ export default function LoginForm() {
       <CardHeader className="space-y-1 text-center">
         <CardTitle className="text-2xl font-bold">Login</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <Button variant="outline" className="w-full h-12 font-normal justify-start px-4">
+            <Github className="mr-2 h-5 w-5" />
+            Continue with GitHub
+          </Button>
+          <Button variant="outline" className="w-full h-12 font-normal justify-start px-4">
+            <GitlabIcon className="mr-2 h-5 w-5" />
+            Continue with GitLab
+          </Button>
+          <div className="relative">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-white px-2 text-muted-foreground">Or continue with</span>
+            </div>
+          </div>
+        </div>
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Input
@@ -56,8 +75,12 @@ export default function LoginForm() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter>
+      <CardFooter className="flex flex-col space-y-4">
         {message && <p className="text-sm text-center w-full text-muted-foreground">{message}</p>}
+        <Button variant="ghost" className="w-full h-12 font-normal">
+          <Mail className="mr-2 h-5 w-5" />
+          Continue with Email
+        </Button>
       </CardFooter>
     </Card>
   )
